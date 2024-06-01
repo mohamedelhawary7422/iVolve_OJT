@@ -1,0 +1,45 @@
+---
+- name: lab5
+  hosts: server
+  become: yes
+  vars_files:
+    - ~/ansible/lab5/secret.yml
+
+  tasks:
+    - name: Install nginx
+      yum:
+        name: nginx
+        state: latest
+
+    - name: Remove default nginx configuration
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Copy nginx configuration file
+      copy:
+        src: ~/ansible/lab5/nginx
+        dest: /etc/nginx/sites-available/nginx
+        owner: mohamed
+        group: root
+        mode: '0644'
+
+    - name: Enable website configuration
+      file:
+        src: /etc/nginx/sites-available/nginx
+        dest: /etc/nginx/sites-enabled/nginx
+        state: link
+
+    - name: Ensure nginx is running
+      systemd:
+        name: nginx
+        state: started
+                enabled: yes
+
+    - name: Create HTML file
+      copy:
+        content: "<h1>Hello from Mohamed</h1>"
+        dest: /usr/share/nginx/html/index.html
+        owner: mohamed
+        group: root
+        mode: '0644'
